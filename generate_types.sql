@@ -21,9 +21,9 @@ CREATE TABLE `$prefix$_dbpedia_properties_original` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 ;
   
 # Import data
-# Note: requires preprocessed data files using NT2CSV.java
-LOAD DATA INFILE 'PATH_TO_YOUR_DATA/instance_types_en.csv' IGNORE INTO TABLE $prefix$_dbpedia_types_original FIELDS TERMINATED BY ',' OPTIONALLY ENCLOSED BY '\'' LINES TERMINATED BY '\n' ;
-LOAD DATA INFILE 'PATH_TO_YOUR_DATA/mappingbased_properties_en.csv' IGNORE INTO TABLE $prefix$_dbpedia_properties_original FIELDS TERMINATED BY ',' OPTIONALLY ENCLOSED BY '\'' LINES TERMINATED BY '\n' ;
+# Note: requires preprocessed data files using getcsv.sh
+LOAD DATA INFILE 'PATH_TO_YOUR_DATA/instance_types_$prefix$.csv' IGNORE INTO TABLE $prefix$_dbpedia_types_original FIELDS TERMINATED BY ',' OPTIONALLY ENCLOSED BY '\'' LINES TERMINATED BY '\n' ;
+LOAD DATA INFILE 'PATH_TO_YOUR_DATA/mappingbased_properties_$prefix$.csv' IGNORE INTO TABLE $prefix$_dbpedia_properties_original FIELDS TERMINATED BY ',' OPTIONALLY ENCLOSED BY '\'' LINES TERMINATED BY '\n' ;
 
 # Some transformations to allow better indexing - everything is converted to md5 with lookup tables
 DROP TABLE IF EXISTS `$prefix$_dbpedia_types_md5` ;
@@ -225,22 +225,22 @@ CREATE TABLE `$prefix$_resulting_types_readable` (
   `resource` varchar(1000) NOT NULL,
   `type` varchar(1000) NOT NULL,
   `score` float NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 ;
 
 INSERT INTO $prefix$_resulting_types_readable
   SELECT r2md5.resource, t2md5.type, score FROM $prefix$_resulting_types AS res
   LEFT JOIN $prefix$_dbpedia_resource_to_md5 AS r2md5 ON res.resource = r2md5.resource_md5
-  LEFT JOIN $prefix$_dbpedia_type_to_md5 AS t2md5 ON res.type=t2md5.type_md5;
+  LEFT JOIN $prefix$_dbpedia_type_to_md5 AS t2md5 ON res.type=t2md5.type_md5 ;
 
 DROP TABLE IF EXISTS `$prefix$_resulting_types_filtered` ;
 CREATE TABLE `$prefix$_resulting_types_filtered` (
-  `resource` varchar(1000) NOT NULL,
+  `resource` varchar(1000) NOT NULL ,
   `type` varchar(1000) NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 ;
 
 INSERT INTO $prefix$_resulting_types_filtered
   SELECT res.resource, res.type FROM $prefix$_resulting_types_readable AS res
-  WHERE res.score > 0.7;
+  WHERE res.score > 0.7 ;
 
 # Read types at the threshold you like, e.g.
 #SELECT r2md5.resource,t2md5.type FROM resulting_types AS res
@@ -250,4 +250,4 @@ INSERT INTO $prefix$_resulting_types_filtered
 
 SELECT concat('<', resource, '> ', '<http://www.w3.org/1999/02/22-rdf-syntax-ns#type> ' , '<',type, '> .')
 FROM `$prefix$_resulting_types_filtered`
-INTO OUTFILE '/tmp/generated_instance_types_$prefix$.nt';
+INTO OUTFILE '/tmp/generated_instance_types_$prefix$.nt' ;
