@@ -247,3 +247,7 @@ INSERT INTO $prefix$_resulting_types_filtered
 #LEFT JOIN dbpedia_resource_to_md5 AS r2md5 ON res.resource=r2md5.resource_md5
 #LEFT JOIN dbpedia_type_to_md5 AS t2md5 ON res.type=t2md5.type_md5
 #WHERE score>=0.4
+
+SELECT concat('<', resource, '> ', '<http://www.w3.org/1999/02/22-rdf-syntax-ns#type> ' , '<',type, '> .')
+FROM `$prefix$_resulting_types_filtered`
+INTO OUTFILE '/tmp/generated_instance_types_$prefix$.nt';
